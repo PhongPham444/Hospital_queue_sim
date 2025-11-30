@@ -8,7 +8,7 @@ config = {
     },
     'nodes': {
         # name: { service_rate (mu), servers (c) }
-        'registration': {'service_rate': 1.0, 'servers': 3},
+        'registration': {'service_rate': 8.0, 'servers': 3},
         'doctor':       {'service_rate': 5.0, 'servers': 5},
         'lab':          {'service_rate': 10.0, 'servers': 4},
         'pharmacy':     {'service_rate': 6.0, 'servers': 2}
