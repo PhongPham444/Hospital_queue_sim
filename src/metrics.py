@@ -62,6 +62,8 @@ class Metrics:
 
             avg_q = node.avg_queue_length(effective_T)
             avg_in_service = node.avg_in_service(effective_T)
+            avg_in_system = node.avg_in_system(effective_T)
+
             util = node.utilization(effective_T)
             node_stats[name] = {
                 'mean_waiting_time': mean_wait,
@@ -69,22 +71,44 @@ class Metrics:
                 'mean_response_time': mean_response,
                 'avg_queue_length_timeavg': avg_q,
                 'avg_in_service_timeavg': avg_in_service,
+                'avg_in_system': avg_in_system,
                 'utilization': util,
                 'num_completed_jobs': node.completed_jobs
             }
         return node_stats
 
+    # def compute_overall_metrics(self):
+    #     # E[w], E[R] overall (across nodes/patients)
+    #     waits = []
+    #     responses = []
+    #     for p in self._patients_after_warmup():
+    #         # accumulate waiting times across nodes visited
+    #         for node in ['registration', 'doctor', 'lab', 'pharmacy']:
+    #             a = p.get(f"{node}_arrival")
+    #             s = p.get(f"{node}_service_start")
+    #             if a is not None and s is not None:
+    #                 waits.append(max(0.0, s - a))
+    #         # response total: patient.exit_time() - arrival_time (if exit exists)
+    #         exit_t = p.exit_time()
+    #         if exit_t is not None:
+    #             responses.append(max(0.0, exit_t - p.arrival_time))
+    #     Ew = statistics.mean(waits) if waits else 0.0
+    #     Er = statistics.mean(responses) if responses else 0.0
+    #     return {'E[w]': Ew, 'E[R]': Er, 'num_patients': len(self._patients_after_warmup())}
+    
     def compute_overall_metrics(self):
         # E[w], E[R] overall (across nodes/patients)
         waits = []
         responses = []
         for p in self._patients_after_warmup():
             # accumulate waiting times across nodes visited
+            total = 0
             for node in ['registration', 'doctor', 'lab', 'pharmacy']:
                 a = p.get(f"{node}_arrival")
                 s = p.get(f"{node}_service_start")
                 if a is not None and s is not None:
-                    waits.append(max(0.0, s - a))
+                    total+= s-a
+            waits.append(total)
             # response total: patient.exit_time() - arrival_time (if exit exists)
             exit_t = p.exit_time()
             if exit_t is not None:
@@ -123,8 +147,8 @@ class Metrics:
         node_stats = self.compute_node_metrics()
         header = [
             'workload', 'rep', 'seed', 'node_name', 'servers', 'mu', 'lambda_effective',
-            'mean_waiting_time', 'mean_service_time', 'mean_response_time',
-            'avg_queue_length_timeavg', 'avg_in_service_timeavg', 'utilization', 'num_completed_jobs'
+            'E[w]', 'E[s]', 'E[r]',
+            'E[n_q]', 'E[n_s]', 'E[n]', 'utilization', 'num_completed_jobs'
         ]
         rows = []
         # estimate lambda_effective using visit ratios: here we assume external lambda belongs to config usage (caller)
@@ -139,6 +163,7 @@ class Metrics:
                 s['mean_response_time'],
                 s['avg_queue_length_timeavg'],
                 s['avg_in_service_timeavg'],
+                s['avg_in_system'],
                 s['utilization'],
                 s['num_completed_jobs']
             ]

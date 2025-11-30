@@ -55,10 +55,10 @@ def run_once(run_time, warmup_time, seed, out_dir, workload_name="default"):
 
 def run_experiment(run_time, warmup_time, replications, base_seed, output_dir, workload_name="default"):
     os.makedirs(output_dir, exist_ok=True)
-    per_patient_dir = os.path.join(output_dir, "per_patient")
+    # per_patient_dir = os.path.join(output_dir, "per_patient")
     per_node_dir = os.path.join(output_dir, "per_node_rep")
     summary_dir = os.path.join(output_dir, "summaries")
-    os.makedirs(per_patient_dir, exist_ok=True)
+    # os.makedirs(per_patient_dir, exist_ok=True)
     os.makedirs(per_node_dir, exist_ok=True)
     os.makedirs(summary_dir, exist_ok=True)
 
@@ -73,8 +73,8 @@ def run_experiment(run_time, warmup_time, replications, base_seed, output_dir, w
         metrics.finalize_nodes(sim_end)
 
         # write per-patient CSV
-        per_patient_file = os.path.join(per_patient_dir, f"{workload_name}_rep{rep}_seed{seed}.csv")
-        metrics.write_per_patient_csv(per_patient_file, workload_name, rep, seed)
+        # per_patient_file = os.path.join(per_patient_dir, f"{workload_name}_rep{rep}_seed{seed}.csv")
+        # metrics.write_per_patient_csv(per_patient_file, workload_name, rep, seed)
 
         # write per-node CSV
         per_node_file = os.path.join(per_node_dir, f"{workload_name}_rep{rep}_seed{seed}.csv")
@@ -90,13 +90,15 @@ def run_experiment(run_time, warmup_time, replications, base_seed, output_dir, w
     summary_file = os.path.join(summary_dir, f"{workload_name}_summary.csv")
     # aggregate across reps
     # compute mean and std for E[w] and E[R]
-    Ew_vals = [o['E[w]'] for (_, _, o) in [(r,s,o) for (r,s,o) in [(x[0], x[1], x[2]) for x in all_overall_stats]]]
-    Er_vals = [o['E[R]'] for (_, _, o) in [(r,s,o) for (r,s,o) in [(x[0], x[1], x[2]) for x in all_overall_stats]]]
+    # Ew_vals = [o['E[w]'] for (_, _, o) in [(r,s,o) for (r,s,o) in [(x[0], x[1], x[2]) for x in all_overall_stats]]]
+    # Er_vals = [o['E[R]'] for (_, _, o) in [(r,s,o) for (r,s,o) in [(x[0], x[1], x[2]) for x in all_overall_stats]]]
 
     # simpler: compute via collected all_overall_stats list
     Ew_list = [entry[2]['E[w]'] for entry in all_overall_stats]
     Er_list = [entry[2]['E[R]'] for entry in all_overall_stats]
+
     import statistics, math
+
     def mean_std_ci(xlist):
         if not xlist:
             return (0.0, 0.0, 0.0, 0.0)
@@ -121,7 +123,7 @@ def run_experiment(run_time, warmup_time, replications, base_seed, output_dir, w
         'Ew_list': Ew_list,
         'Er_list': Er_list,
         'summary_file': summary_file,
-        'per_patient_dir': per_patient_dir,
+        # 'per_patient_dir': per_patient_dir,
         'per_node_dir': per_node_dir
     }
 

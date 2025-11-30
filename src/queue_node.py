@@ -15,6 +15,7 @@ class QueueNode:
         self.queue_area = 0.0       # integral of queue_length(t) dt
         self.busy_area = 0.0        # integral of in_service(t) dt
         self.current_in_service = 0 # number of servers busy at current time
+        self.system_area= 0.0
         # queue log (time, q_len) for optional post-checking
         self.queue_log: List[tuple] = []  # list of (time, queue_length)
         # count completed jobs
@@ -31,6 +32,7 @@ class QueueNode:
         q_len = len(self.resource.queue)
         self.queue_area += q_len * delta
         self.busy_area += self.current_in_service * delta
+        self.system_area += (q_len + self.current_in_service) * delta
         self.last_event_time = now
         # optional log
         self.queue_log.append((now, q_len))
@@ -98,6 +100,11 @@ class QueueNode:
         if effective_time <= 0:
             return 0.0
         return self.busy_area / effective_time
+    
+    def avg_in_system(self, effective_time: float) -> float:
+        if effective_time <= 0:
+            return 0.0
+        return self.system_area / effective_time
 
     def utilization(self, effective_time: float) -> float:
         denom = self.servers * effective_time
